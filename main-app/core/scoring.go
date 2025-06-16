@@ -4,8 +4,8 @@ import (
     "sort"
 )
 
-// cardValue returns 10 for 10/J/Q/K, else pip value.
-func cardValue(c Card) int {
+// CardValue returns 10 for 10/J/Q/K, else pip value.
+func CardValue(c Card) int {
     if c.Rank >= 10 {
         return 10
     }
@@ -29,7 +29,7 @@ func scoreFifteens(hand []Card, starter Card) int {
             }
             return
         }
-        dfs(idx+1, sum+cardValue(all[idx]), picked+1)
+        dfs(idx+1, sum+CardValue(all[idx]), picked+1)
         dfs(idx+1, sum, picked)
     }
     dfs(0, 0, 0)

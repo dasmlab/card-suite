@@ -3,6 +3,7 @@ package core
 import (
     "errors"
     "math/rand"
+    "fmt"
     "time"
 )
 
@@ -147,18 +148,18 @@ func (g *Game) PlayCard(playerIdx int, cardIdx int) error {
 
     card := player.Hand[cardIdx]
     // Check if card can be played (total must not exceed 31)
-    if g.PlayTotal+cardValue(card) > 31 {
+    if g.PlayTotal+CardValue(card) > 31 {
         return errors.New("cannot play card: would exceed 31")
     }
 
     // Play card: add to table, history, remove from hand
     g.PlayTable = append(g.PlayTable, card)
     g.PlayHistory = append(g.PlayHistory, PegAction{PlayerIdx: playerIdx, Card: &card, TableIdx: len(g.PlayTable)-1})
-    g.PlayTotal += cardValue(card)
+    g.PlayTotal += CardValue(card)
     player.Hand = append(player.Hand[:cardIdx], player.Hand[cardIdx+1:]...)
 
     // Pegging points!
-    points := g.calcPegPoints()
+    points := g.CalcPegPoints()
     player.Score += points
 
     // If exactly 31, award 2 points and reset table
@@ -190,7 +191,7 @@ func (g *Game) Go(playerIdx int) error {
 }
 
 // Helper: Calculate pegging points for most recent play
-func (g *Game) calcPegPoints() int {
+func (g *Game) CalcPegPoints() int {
     n := len(g.PlayTable)
     if n == 0 {
         return 0
@@ -200,7 +201,7 @@ func (g *Game) calcPegPoints() int {
     // Check for 15 (2 points)
     sum := 0
     for i := n - 1; i >= 0; i-- {
-        sum += cardValue(g.PlayTable[i])
+        sum += CardValue(g.PlayTable[i])
         if sum >= 15 {
             break
         }
@@ -244,7 +245,7 @@ func (g *Game) allPlayersCannotPlay() bool {
         }
         // If any card can be played, return false
         for _, c := range p.Hand {
-            if g.PlayTotal+cardValue(c) <= 31 {
+            if g.PlayTotal+CardValue(c) <= 31 {
                 return false
             }
         }
@@ -315,5 +316,39 @@ func (g *Game) ScoreRoundAndRotateDealer() error {
     // 4. If not over, rotate dealer and prep next round
     g.StartNewRound()
     return nil
+}
+
+// IsLegalPegPlay returns true if playing card c would not exceed 31, false otherwise.
+func (g *Game) IsLegalPegPlay(playerIdx int, c Card) bool {
+    // Only legal if the sum won't exceed 31
+    return g.PlayTotal + CardValue(c) <= 31
+}
+
+
+
+// NewTestPegGame returns a test Game with provided hands and starter card.
+func NewTestPegGame(hands [][]Card, starter Card) *Game {
+    players := make([]*Player, len(hands))
+    for i := range hands {
+        players[i] = &Player{
+            ID:    PlayerID(fmt.Sprintf("P%d", i)),
+            Name:  fmt.Sprintf("P%d", i),
+            Score: 0,
+            Hand:  hands[i],
+            // Strategy: can set nil or bot/human later
+        }
+    }
+    g := &Game{
+        Mode:        Mode1v1,
+        Players:     players,
+        State:       Playing,
+        Starter:     starter,
+        PlayTable:   []Card{},
+        PlayHistory: []PegAction{},
+        PlayTotal:   0,
+        CurrentTurn: 0,
+        // Fill any other fields as needed for pegging test
+    }
+    return g
 }
 
