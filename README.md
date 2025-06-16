@@ -25,8 +25,8 @@ flowchart LR
     C1 <--> |"MultiPlayer Events"| C2
 
     %% App Stores to clients
-    GP -- "Install Client" --> C1
-    AS -- "Install Client" --> C2
+    C1 -- "Install Client" --> GP
+    C2 -- "Install Client" --> AS
 
 ```
 # Features
