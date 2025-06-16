@@ -7,28 +7,8 @@
 
 ## Architecture Overview
 
-```mermaid
-flowchart LR
-    S1["games.dasmlab.org<br/><b>(GIN ENGINE)</b>"]
+![image](https://github.com/user-attachments/assets/919944c1-9754-4fca-90af-bb04a9d29df6)
 
-    C1["<b>client device 1</b>"]
-    C2["<b>client device 2</b>"]
-
-    GP["Google Play Store"]
-    AS["Apple App Store"]
-
-    %% Backend to clients
-    S1 -- "Login/API/SSE/WEBSOCK" --> C1
-    S1 -- "Login/API/SSE/WEBSOCK" --> C2
-
-    %% Multiplayer events
-    C1 <--> |"MultiPlayer Events"| C2
-
-    %% App Stores to clients
-    C1 -- "Install Client" --> GP
-    C2 -- "Install Client" --> AS
-
-```
 # Features
 
 Cribbage: All modes (1v1, 3-way, 2v2, 3 teams)
