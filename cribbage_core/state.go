@@ -4,6 +4,7 @@ import "math/rand"
 
 type GameMode int
 
+
 const (
     Mode1v1 GameMode = iota
     Mode3Way
@@ -33,5 +34,9 @@ type Game struct {
     CurrentTurn  int
     Rng          *rand.Rand
     Starter      Card
+    PlayTable   []Card     // Stack of played cards (since last reset)
+    PlayHistory []PegAction // History of plays and "go"s
+    PlayTotal   int        // Running total (<= 31)
 }
+
 
