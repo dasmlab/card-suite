@@ -15,6 +15,7 @@ func NewGame(mode GameMode, playerNames []string, rng *rand.Rand) *Game {
             ID:    PlayerID(name), // Use UUID for real IDs in prod
             Name:  name,
             Score: 0,
+	    Strategy: &HumanStrategy{}, // Default to human
         }
     }
     g := &Game{
