@@ -8,26 +8,34 @@
 ## Architecture Overview
 
 ```mermaid
-flowchart TD
-    subgraph Stores
-        A1[Google Play Store]
-        A2[Apple App Store]
+flowchart LR
+    subgraph Backend
+        S1[games.dasmlab.org<br/>Gin Backend<br/>(Go, OAuth, Prometheus)]
     end
 
-    C1[Client Device 1<br/>Android/iOS/Web]
-    C2[Client Device 2<br/>Android/iOS/Web]
+    subgraph Clients
+        C1[Client Device 1<br/>Android/iOS/Web]
+        C2[Client Device 2<br/>Android/iOS/Web]
+    end
 
-    S1[games.dasmlab.org<br/>Gin Backend<br/>Go, OAuth, Prometheus]
+    subgraph Stores
+        GP[Google Play Store]
+        AS[Apple App Store]
+    end
 
-    %% Arrows
-    A1-- Install App -->C1
-    A2-- Install App -->C2
-    C1-- Secure Login/API/WebSocket -->S1
-    C2-- Secure Login/API/WebSocket -->S1
-    C1<-- Multiplayer Game Events -->C2
-    C2<-- Multiplayer Game Events -->C1
-    S1-- App Updates/Store Links -->A1
-    S1-- App Updates/Store Links -->A2
+    %% Main flows
+    S1 -- 1. Login/API/WebSocket --> C1
+    S1 -- 2. Login/API/WebSocket --> C2
+
+    C1 -- 3. Multiplayer Game Events --> C2
+    C2 -- 4. Multiplayer Game Events --> C1
+
+    %% App install/update flows (numbered for clarity)
+    GP -- 5. Install/Update --> C1
+    AS -- 6. Install/Update --> C2
+
+    S1 -- 7. App Updates/Links --> GP
+    S1 -- 8. App Updates/Links --> AS
 ```
 # Features
 
