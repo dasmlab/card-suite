@@ -9,30 +9,25 @@
 
 ```mermaid
 flowchart LR
-    %% Backend
-    S1["games.dasmlab.org --- Gin Backend --- Go, OAuth, Prometheus"]
+    S1["games.dasmlab.org<br/><b>(GIN ENGINE)</b>"]
 
-    %% Clients
-    C1["Client Device 1 --- Android / iOS / Web"]
-    C2["Client Device 2 --- Android / iOS / Web"]
+    C1["<b>client device 1</b>"]
+    C2["<b>client device 2</b>"]
 
-    %% Stores
     GP["Google Play Store"]
     AS["Apple App Store"]
 
-    %% App install/update flows
-    GP -->|Install/Update| C1
-    AS -->|Install/Update| C2
+    %% Backend to clients
+    S1 -- "Login/API/SSE/WEBSOCK" --> C1
+    S1 -- "Login/API/SSE/WEBSOCK" --> C2
 
-    %% Main flows
-    S1 -->|Login/API/WebSocket| C1
-    S1 -->|Login/API/WebSocket| C2
+    %% Multiplayer events
+    C1 <--> |"MultiPlayer Events"| C2
 
-    C1 <--> |Multiplayer Game Events| C2
+    %% App Stores to clients
+    GP -- "Install Client" --> C1
+    AS -- "Install Client" --> C2
 
-    %% Optional: Backend to stores for update links (can omit these if not needed)
-    S1 -- App Update Metadata --> GP
-    S1 -- App Update Metadata --> AS
 ```
 # Features
 
