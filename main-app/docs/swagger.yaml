@@ -1,0 +1,110 @@
+basePath: /
+definitions:
+  api.DealResponse:
+    properties:
+      players:
+        items:
+          $ref: '#/definitions/core.Player'
+        type: array
+      starter:
+        $ref: '#/definitions/core.Card'
+      state:
+        type: string
+    type: object
+  core.Card:
+    properties:
+      rank:
+        $ref: '#/definitions/core.Rank'
+      suit:
+        $ref: '#/definitions/core.Suit'
+    type: object
+  core.Player:
+    properties:
+      hand:
+        items:
+          $ref: '#/definitions/core.Card'
+        type: array
+      id:
+        type: string
+      isBot:
+        type: boolean
+      name:
+        type: string
+      score:
+        type: integer
+    type: object
+  core.Rank:
+    enum:
+    - 1
+    - 2
+    - 3
+    - 4
+    - 5
+    - 6
+    - 7
+    - 8
+    - 9
+    - 10
+    - 11
+    - 12
+    - 13
+    type: integer
+    x-enum-varnames:
+    - Ace
+    - Two
+    - Three
+    - Four
+    - Five
+    - Six
+    - Seven
+    - Eight
+    - Nine
+    - Ten
+    - Jack
+    - Queen
+    - King
+  core.Suit:
+    enum:
+    - C
+    - D
+    - H
+    - S
+    type: string
+    x-enum-varnames:
+    - Clubs
+    - Diamonds
+    - Hearts
+    - Spades
+info:
+  contact: {}
+  description: APIs for MCP Server Instantiation, Configuration and Handling
+  title: MCP Explorer - MCP Server APIs
+  version: 0.0.1
+paths:
+  /deal:
+    get:
+      description: Deals out and Starts a Cribbage hand
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/api.DealResponse'
+      summary: Deals out a Cribbage Hand
+      tags:
+      - cribbage
+  /status:
+    get:
+      description: Provides the current status of a cribbage game
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/api.DealResponse'
+      summary: Gives the Status of a Cribbage Deal
+      tags:
+      - cribbage
+swagger: "2.0"

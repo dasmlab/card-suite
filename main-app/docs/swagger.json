@@ -1,0 +1,153 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "description": "APIs for MCP Server Instantiation, Configuration and Handling",
+        "title": "MCP Explorer - MCP Server APIs",
+        "contact": {},
+        "version": "0.0.1"
+    },
+    "basePath": "/",
+    "paths": {
+        "/deal": {
+            "get": {
+                "description": "Deals out and Starts a Cribbage hand",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "cribbage"
+                ],
+                "summary": "Deals out a Cribbage Hand",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/api.DealResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/status": {
+            "get": {
+                "description": "Provides the current status of a cribbage game",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "cribbage"
+                ],
+                "summary": "Gives the Status of a Cribbage Deal",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/api.DealResponse"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "api.DealResponse": {
+            "type": "object",
+            "properties": {
+                "players": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/core.Player"
+                    }
+                },
+                "starter": {
+                    "$ref": "#/definitions/core.Card"
+                },
+                "state": {
+                    "type": "string"
+                }
+            }
+        },
+        "core.Card": {
+            "type": "object",
+            "properties": {
+                "rank": {
+                    "$ref": "#/definitions/core.Rank"
+                },
+                "suit": {
+                    "$ref": "#/definitions/core.Suit"
+                }
+            }
+        },
+        "core.Player": {
+            "type": "object",
+            "properties": {
+                "hand": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/core.Card"
+                    }
+                },
+                "id": {
+                    "type": "string"
+                },
+                "isBot": {
+                    "type": "boolean"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "score": {
+                    "type": "integer"
+                }
+            }
+        },
+        "core.Rank": {
+            "type": "integer",
+            "enum": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13
+            ],
+            "x-enum-varnames": [
+                "Ace",
+                "Two",
+                "Three",
+                "Four",
+                "Five",
+                "Six",
+                "Seven",
+                "Eight",
+                "Nine",
+                "Ten",
+                "Jack",
+                "Queen",
+                "King"
+            ]
+        },
+        "core.Suit": {
+            "type": "string",
+            "enum": [
+                "C",
+                "D",
+                "H",
+                "S"
+            ],
+            "x-enum-varnames": [
+                "Clubs",
+                "Diamonds",
+                "Hearts",
+                "Spades"
+            ]
+        }
+    }
+}

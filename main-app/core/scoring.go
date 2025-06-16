@@ -1,4 +1,4 @@
-package cribbage_core
+package core
 
 import (
     "sort"
@@ -14,6 +14,9 @@ func cardValue(c Card) int {
 
 // ------- FIFTEENS -------
 func scoreFifteens(hand []Card, starter Card) int {
+    if len(hand) == 0 {
+        return 0
+    }
     // All unique combinations of 2+ cards that sum to 15.
     all := append(hand[:], starter)
     n := len(all)
@@ -35,6 +38,9 @@ func scoreFifteens(hand []Card, starter Card) int {
 
 // ------- PAIRS -------
 func scorePairs(hand []Card, starter Card) int {
+    if len(hand) == 0 {
+        return 0
+    }
     all := append(hand[:], starter)
     points := 0
     for i := 0; i < len(all); i++ {
@@ -51,6 +57,9 @@ func scorePairs(hand []Card, starter Card) int {
 // See https://www.pagat.com/rules/cribbage.html#scoring for scoring rules.
 // This code finds all runs, but only scores the longest if they overlap.
 func scoreRuns(hand []Card, starter Card) int {
+    if len(hand) == 0 {
+        return 0
+    }
     all := append(hand[:], starter)
     maxRunLen := 0
     runCount := 0
@@ -114,6 +123,9 @@ func isRun(cards []Card) bool {
 
 // ------- FLUSH -------
 func scoreFlush(hand []Card, starter Card, isCrib bool) int {
+    if len(hand) == 0 {
+        return 0
+    }
     suit := hand[0].Suit
     for _, c := range hand[1:] {
         if c.Suit != suit {
@@ -130,6 +142,9 @@ func scoreFlush(hand []Card, starter Card, isCrib bool) int {
 
 // ------- NOBS -------
 func scoreNobs(hand []Card, starter Card) int {
+    if len(hand) == 0 {
+        return 0
+    }
     for _, c := range hand {
         if c.Rank == Jack && c.Suit == starter.Suit {
             return 1
@@ -140,6 +155,9 @@ func scoreNobs(hand []Card, starter Card) int {
 
 // ------- HAND SCORING ENTRY POINT -------
 func ScoreHand(hand []Card, starter Card, isCrib bool) int {
+    if len(hand) == 0 {
+        return 0
+    }
     // For the SHOW phase (not pegging).
     return scoreFifteens(hand, starter) +
         scorePairs(hand, starter) +

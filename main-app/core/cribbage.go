@@ -1,4 +1,4 @@
-package cribbage_core
+package core
 
 import (
     "errors"
@@ -260,23 +260,59 @@ func (g *Game) resetPegTable(lastPlayerIdx int) {
 }
 
 
-// ScoreRound scores all hands and the crib, then rotates the dealer for the next round.
+// StartNewRound resets and rotates dealer/crib for a new round.
+func (g *Game) StartNewRound() error {
+    if !g.GameOver {
+        g.Round++
+        // Rotate dealer/crib
+        g.CribOwnerIdx = (g.CribOwnerIdx + 1) % len(g.Players)
+        g.State = WaitingForPlayers
+        // Optionally, reset board state and hands
+        for _, p := range g.Players {
+            p.Hand = nil
+        }
+        g.Crib = []Card{}
+        g.Starter = Card{}
+        g.Deck = nil
+        g.PlayTable = nil
+        g.PlayHistory = nil
+        g.PlayTotal = 0
+        g.CurrentTurn = g.CribOwnerIdx
+    }
+    return nil
+}
+
+// CheckGameOver sets GameOver and Winner if a player reaches 121+ points.
+func (g *Game) CheckGameOver() bool {
+    for _, p := range g.Players {
+        if p.Score >= 121 {
+            g.GameOver = true
+            g.Winner = p
+            g.State = Finished
+            return true
+        }
+    }
+    return false
+}
+
+// Updated ScoreRoundAndRotateDealer for lifecycle
 func (g *Game) ScoreRoundAndRotateDealer() error {
-    // 1. Score each player's hand (not the crib)
+    // 1. Score hands
     for _, p := range g.Players {
         score := ScoreHand(p.Hand, g.Starter, false)
         p.Score += score
-        // Optionally: Log each player's hand/score
     }
-    // 2. Score the crib for the dealer (CribOwnerIdx)
+    // 2. Score crib for dealer
     cribOwner := g.Players[g.CribOwnerIdx]
     cribScore := ScoreHand(g.Crib, g.Starter, true)
     cribOwner.Score += cribScore
 
-    // 3. Update state and rotate dealer/crib owner for next round
-    g.State = Finished
-    g.CribOwnerIdx = (g.CribOwnerIdx + 1) % len(g.Players)
-
+    // 3. Check for game over and update state
+    if g.CheckGameOver() {
+        return nil // Game over, don't start new round
+    }
+    // 4. If not over, rotate dealer and prep next round
+    g.StartNewRound()
     return nil
 }
 

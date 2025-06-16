@@ -1,4 +1,4 @@
-package cribbage_core
+package core
 
 type Player struct {
     ID     PlayerID

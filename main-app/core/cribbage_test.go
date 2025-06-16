@@ -1,4 +1,4 @@
-package cribbage_core
+package core
 
 import (
     "math/rand"
@@ -172,11 +172,6 @@ func TestScoreRoundAndDealerRotation(t *testing.T) {
 
     log.Infof("Alice hand: %v, Bob hand: %v, Crib: %v, Starter: %v", g.Players[0].Hand, g.Players[1].Hand, g.Crib, g.Starter)
 
-    // -- Score all hands and crib, and rotate dealer --
-    if err := g.ScoreRoundAndRotateDealer(); err != nil {
-        t.Fatalf("ScoreRoundAndRotateDealer failed: %v", err)
-    }
-    log.Infof("Scores: Alice=%d Bob=%d (crib owner was %s)", g.Players[0].Score, g.Players[1].Score, g.Players[g.CribOwnerIdx^1].Name)
 
     // -- Verify scores --
 
@@ -187,6 +182,11 @@ func TestScoreRoundAndDealerRotation(t *testing.T) {
 
     log.Infof("Breakdown: wantAlice=%d wantBob=%d wantCrib=%d", wantAlice, wantBob, wantCrib)
 
+    // -- Score all hands and crib, and rotate dealer --
+    if err := g.ScoreRoundAndRotateDealer(); err != nil {
+        t.Fatalf("ScoreRoundAndRotateDealer failed: %v", err)
+    }
+    log.Infof("Scores: Alice=%d Bob=%d (crib owner was %s)", g.Players[0].Score, g.Players[1].Score, g.Players[g.CribOwnerIdx^1].Name)
 
 
     if g.CribOwnerIdx == 1 {
@@ -216,5 +216,35 @@ func TestScoreRoundAndDealerRotation(t *testing.T) {
         log.Infof("Dealer rotated: new dealer is %s", g.Players[wantDealer].Name)
     }
     log.Info("Full round/dealer rotation test complete.")
+}
+
+// Tests the games lifecycle
+func TestGameLifecycle(t *testing.T) {
+    rng := rand.New(rand.NewSource(123))
+    g := NewGame(Mode1v1, []string{"Alice", "Bob"}, rng)
+
+    maxRounds := 50
+    for !g.GameOver && g.Round < maxRounds {
+        if err := g.Deal(); err != nil {
+            t.Fatalf("Deal failed: %v", err)
+        }
+        // Everyone discards first two cards for this test (simplified)
+        for i := range g.Players {
+            g.DiscardToCrib(i, []int{0, 1})
+        }
+        // Fast-forward to scoring
+        g.State = Playing
+        if err := g.ScoreRoundAndRotateDealer(); err != nil {
+            t.Fatalf("ScoreRoundAndRotateDealer failed: %v", err)
+        }
+    }
+    if !g.GameOver {
+        t.Errorf("Game did not end after %d rounds", maxRounds)
+    }
+    if g.Winner == nil {
+        t.Error("Winner not set at end of game")
+    } else {
+        t.Logf("Game ended after %d rounds. Winner: %s (%d pts)", g.Round, g.Winner.Name, g.Winner.Score)
+    }
 }
 

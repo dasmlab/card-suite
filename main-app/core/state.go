@@ -1,4 +1,4 @@
-package cribbage_core
+package core
 
 import "math/rand"
 
@@ -37,6 +37,10 @@ type Game struct {
     PlayTable   []Card     // Stack of played cards (since last reset)
     PlayHistory []PegAction // History of plays and "go"s
     PlayTotal   int        // Running total (<= 31)
+    // New fields:
+    Round        int
+    GameOver     bool
+    Winner       *Player
 }
 
 
