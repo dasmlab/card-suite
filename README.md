@@ -14,10 +14,10 @@ flowchart TD
         A2[Apple App Store]
     end
 
-    C1[Client Device 1<br/>(Android/iOS/Web)]
-    C2[Client Device 2<br/>(Android/iOS/Web)]
+    C1[Client Device 1<br/>Android/iOS/Web]
+    C2[Client Device 2<br/>Android/iOS/Web]
 
-    S1[games.dasmlab.org<br/>Gin Backend<br/>(Go, OAuth, Prometheus)]
+    S1[games.dasmlab.org<br/>Gin Backend<br/>Go, OAuth, Prometheus]
 
     %% Arrows
     A1-- Install App -->C1
