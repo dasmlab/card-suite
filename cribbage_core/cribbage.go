@@ -259,3 +259,24 @@ func (g *Game) resetPegTable(lastPlayerIdx int) {
     // Optionally: mark hands empty as round finished, etc.
 }
 
+
+// ScoreRound scores all hands and the crib, then rotates the dealer for the next round.
+func (g *Game) ScoreRoundAndRotateDealer() error {
+    // 1. Score each player's hand (not the crib)
+    for _, p := range g.Players {
+        score := ScoreHand(p.Hand, g.Starter, false)
+        p.Score += score
+        // Optionally: Log each player's hand/score
+    }
+    // 2. Score the crib for the dealer (CribOwnerIdx)
+    cribOwner := g.Players[g.CribOwnerIdx]
+    cribScore := ScoreHand(g.Crib, g.Starter, true)
+    cribOwner.Score += cribScore
+
+    // 3. Update state and rotate dealer/crib owner for next round
+    g.State = Finished
+    g.CribOwnerIdx = (g.CribOwnerIdx + 1) % len(g.Players)
+
+    return nil
+}
+

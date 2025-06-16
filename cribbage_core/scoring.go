@@ -4,30 +4,7 @@ import (
     "sort"
 )
 
-// ------- FIFTEENS -------
-func scoreFifteens(hand []Card, starter Card) int {
-    // Score 2 points for every unique combination of 2 or more cards that sum to 15
-    all := append(hand[:], starter)
-    n := len(all)
-    count := 0
-
-    var dfs func(idx int, sum int, picked int)
-    dfs = func(idx int, sum int, picked int) {
-        if idx == n {
-            if picked >= 2 && sum == 15 {
-                count++
-            }
-            return
-        }
-        // Include card at idx
-        dfs(idx+1, sum+cardValue(all[idx]), picked+1)
-        // Exclude card at idx
-        dfs(idx+1, sum, picked)
-    }
-    dfs(0, 0, 0)
-    return count * 2
-}
-
+// cardValue returns 10 for 10/J/Q/K, else pip value.
 func cardValue(c Card) int {
     if c.Rank >= 10 {
         return 10
@@ -35,9 +12,29 @@ func cardValue(c Card) int {
     return int(c.Rank)
 }
 
+// ------- FIFTEENS -------
+func scoreFifteens(hand []Card, starter Card) int {
+    // All unique combinations of 2+ cards that sum to 15.
+    all := append(hand[:], starter)
+    n := len(all)
+    count := 0
+    var dfs func(idx, sum, picked int)
+    dfs = func(idx, sum, picked int) {
+        if idx == n {
+            if picked >= 2 && sum == 15 {
+                count++
+            }
+            return
+        }
+        dfs(idx+1, sum+cardValue(all[idx]), picked+1)
+        dfs(idx+1, sum, picked)
+    }
+    dfs(0, 0, 0)
+    return count * 2
+}
+
 // ------- PAIRS -------
 func scorePairs(hand []Card, starter Card) int {
-    // Score 2 points for each pair of cards of same rank
     all := append(hand[:], starter)
     points := 0
     for i := 0; i < len(all); i++ {
@@ -51,11 +48,13 @@ func scorePairs(hand []Card, starter Card) int {
 }
 
 // ------- RUNS -------
+// See https://www.pagat.com/rules/cribbage.html#scoring for scoring rules.
+// This code finds all runs, but only scores the longest if they overlap.
 func scoreRuns(hand []Card, starter Card) int {
-    // Score for all unique runs of 3, 4, or 5 cards (but only longest if overlaps)
     all := append(hand[:], starter)
     maxRunLen := 0
     runCount := 0
+    // Try runs of 5, then 4, then 3; score only the longest present.
     for runLen := 5; runLen >= 3; runLen-- {
         combs := combinations(all, runLen)
         found := 0
@@ -67,14 +66,14 @@ func scoreRuns(hand []Card, starter Card) int {
         if found > 0 {
             maxRunLen = runLen
             runCount = found
-            break // Only score the longest runs present
+            break // only score the longest runs
         }
     }
     return runCount * maxRunLen
 }
 
 func combinations(cards []Card, k int) [][]Card {
-    // All possible k-card combinations (no repeats)
+    // All k-card combinations (no repeats)
     var res [][]Card
     var comb func(start int, path []Card)
     comb = func(start int, path []Card) {
@@ -93,6 +92,7 @@ func combinations(cards []Card, k int) [][]Card {
 }
 
 func isRun(cards []Card) bool {
+    // Is the set of cards a valid run (consecutive, unique ranks)?
     ranks := make([]int, len(cards))
     for i, c := range cards {
         ranks[i] = int(c.Rank)
@@ -103,7 +103,7 @@ func isRun(cards []Card) bool {
             return false
         }
     }
-    // No duplicate ranks allowed (e.g., 5-5-6)
+    // No duplicate ranks (e.g. 5-5-6)
     for i := 1; i < len(ranks); i++ {
         if ranks[i] == ranks[i-1] {
             return false
@@ -114,7 +114,6 @@ func isRun(cards []Card) bool {
 
 // ------- FLUSH -------
 func scoreFlush(hand []Card, starter Card, isCrib bool) int {
-    // Score 4 points if all hand cards same suit, +1 if starter matches (except crib, must be all 5)
     suit := hand[0].Suit
     for _, c := range hand[1:] {
         if c.Suit != suit {
@@ -131,7 +130,6 @@ func scoreFlush(hand []Card, starter Card, isCrib bool) int {
 
 // ------- NOBS -------
 func scoreNobs(hand []Card, starter Card) int {
-    // 1 point for a Jack in hand that matches the suit of the starter
     for _, c := range hand {
         if c.Rank == Jack && c.Suit == starter.Suit {
             return 1
@@ -142,6 +140,7 @@ func scoreNobs(hand []Card, starter Card) int {
 
 // ------- HAND SCORING ENTRY POINT -------
 func ScoreHand(hand []Card, starter Card, isCrib bool) int {
+    // For the SHOW phase (not pegging).
     return scoreFifteens(hand, starter) +
         scorePairs(hand, starter) +
         scoreRuns(hand, starter) +

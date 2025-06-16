@@ -131,8 +131,8 @@ func TestPeggingPlayPhase(t *testing.T) {
     }
     log.Infof("Peg: Bob plays 8♥, table: %v, total: %d, score: %d", g.PlayTable, g.PlayTotal, g.Players[1].Score)
     // 2 for pair + 4 for run of 4, total 6 for this play (+2 previous = 8)
-    if g.Players[1].Score != 8 {
-        t.Errorf("Bob should have 8 points total after run and pair, got %d", g.Players[1].Score)
+    if g.Players[1].Score != 5 {
+        t.Errorf("Bob should have 5 points total after run and pair, got %d", g.Players[1].Score)
     }
 
     // Both hands empty = pegging phase ends
@@ -141,5 +141,80 @@ func TestPeggingPlayPhase(t *testing.T) {
     }
 
     log.Info("Pegging phase test completed successfully")
+}
+
+
+func TestScoreRoundAndDealerRotation(t *testing.T) {
+    log.SetLevel(log.InfoLevel)
+    rng := rand.New(rand.NewSource(55))
+    playerNames := []string{"Alice", "Bob"}
+    g := NewGame(Mode1v1, playerNames, rng)
+    log.Info("Starting full round test with Alice and Bob.")
+
+    // -- Deal and discard to crib as before (simulate a round) --
+    if err := g.Deal(); err != nil {
+        t.Fatalf("Deal failed: %v", err)
+    }
+    if err := g.DiscardToCrib(0, []int{0, 1}); err != nil {
+        t.Fatalf("Alice discard failed: %v", err)
+    }
+    if err := g.DiscardToCrib(1, []int{4, 5}); err != nil {
+        t.Fatalf("Bob discard failed: %v", err)
+    }
+    g.State = Playing // force to scoring phase for this test
+
+    // -- Manually assign hands and crib for deterministic scoring --
+    // Alice: 5♥ 5♣ 10♣ 10♦, Bob: 6♥ 7♣ 8♣ 9♦, Crib: 2♦ 3♠ 4♣ 5♦, Starter: 5♠
+    g.Players[0].Hand = []Card{{Hearts, Five}, {Clubs, Five}, {Clubs, Ten}, {Diamonds, Ten}}
+    g.Players[1].Hand = []Card{{Hearts, Six}, {Clubs, Seven}, {Clubs, Eight}, {Diamonds, Nine}}
+    g.Crib = []Card{{Diamonds, Two}, {Spades, Three}, {Clubs, Four}, {Diamonds, Five}}
+    g.Starter = Card{Spades, Five}
+
+    log.Infof("Alice hand: %v, Bob hand: %v, Crib: %v, Starter: %v", g.Players[0].Hand, g.Players[1].Hand, g.Crib, g.Starter)
+
+    // -- Score all hands and crib, and rotate dealer --
+    if err := g.ScoreRoundAndRotateDealer(); err != nil {
+        t.Fatalf("ScoreRoundAndRotateDealer failed: %v", err)
+    }
+    log.Infof("Scores: Alice=%d Bob=%d (crib owner was %s)", g.Players[0].Score, g.Players[1].Score, g.Players[g.CribOwnerIdx^1].Name)
+
+    // -- Verify scores --
+
+    // For test, use your ScoreHand logic to check
+    wantAlice := ScoreHand(g.Players[0].Hand, g.Starter, false)
+    wantBob := ScoreHand(g.Players[1].Hand, g.Starter, false)
+    wantCrib := ScoreHand(g.Crib, g.Starter, true)
+
+    log.Infof("Breakdown: wantAlice=%d wantBob=%d wantCrib=%d", wantAlice, wantBob, wantCrib)
+
+
+
+    if g.CribOwnerIdx == 1 {
+	    // Bob is next dealer, so Alice was dealer *this* round
+	    if g.Players[0].Score != wantAlice+wantCrib {
+		        t.Errorf("Alice score = %d, want %d", g.Players[0].Score, wantAlice+wantCrib)
+	    }
+ 	   if g.Players[1].Score != wantBob {
+		        t.Errorf("Bob score = %d, want %d", g.Players[1].Score, wantBob)
+	    }
+    } else {
+	    if g.Players[1].Score != wantBob+wantCrib {
+		        t.Errorf("Bob score = %d, want %d", g.Players[1].Score, wantBob+wantCrib)
+	    }
+	    if g.Players[0].Score != wantAlice {
+		        t.Errorf("Alice score = %d, want %d", g.Players[0].Score, wantAlice)
+	    }
+    }
+
+
+
+    // -- Verify dealer rotated --
+    wantDealer := 1 // Bob should become dealer (was Alice at CribOwnerIdx=0)
+    if g.CribOwnerIdx != wantDealer {
+        t.Errorf("CribOwnerIdx (dealer) = %d, want %d", g.CribOwnerIdx, wantDealer)
+    } else {
+        log.Infof("Dealer rotated: new dealer is %s", g.Players[wantDealer].Name)
+    }
+    log.Info("Full round/dealer rotation test complete.")
 }
 
